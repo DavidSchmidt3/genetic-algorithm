@@ -83,10 +83,17 @@ class App extends React.Component {
   }
 
   changePopulation = e => {
-    let value = +e.target.value;
+    this.setState({ populationCount: e.target.value });
+  }
+
+  setPopulation = () => {
+    let value = this.state.populationCount;
     if (!isNaN(value)) {
       value = value < 20 ? 20 : value;
       this.setState({ populationCount: value });
+    }
+    else {
+      this.setState({ populationCount: 20 });
     }
   }
 
@@ -156,6 +163,7 @@ class App extends React.Component {
               startSimulation={this.startSimulation}
               showFile={this.showFile}
               changePopulation={this.changePopulation}
+              setPopulation={this.setPopulation}
               populationCount={this.state.populationCount}
             />
           </Grid>

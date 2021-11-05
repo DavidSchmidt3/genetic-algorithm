@@ -79,6 +79,7 @@ export default class Settings extends React.Component {
             id="populationCount"
             label="Počet jedincov v populácii"
             value={this.props.populationCount}
+            onBlur={this.props.setPopulation}
             variant="filled"
           />
         </FormControl>
