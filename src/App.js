@@ -112,7 +112,8 @@ class App extends React.Component {
     }
 
     for (let i = 0; i < this.state.populationCount; i++) {
-      this.runSimulation(population[i]);
+      let individual = this.cloneIndividual(population[i]);
+      this.runSimulation(individual);
     }
   }
 
@@ -128,18 +129,27 @@ class App extends React.Component {
     return this.dec2bin(dec).substring(2, 8);
   }
 
+  cloneIndividual = individual => {
+    return individual.map(item => {
+      return item;
+    })
+  }
+
   runSimulation = individual => {
+    let steps = [];
     for (let i = 0; i < individual.length; i++) {
       let instruction = parseInt(this.getInstruction(individual[i]), 2);
       let address = parseInt(this.getAdress(individual[i]), 2);
-      console.log(individual[i], instruction, address);
       switch (instruction) {
-        case 0:
+        case 0: // Inkrementácia
+          individual[address] = individual[address] === 255 ? 0 : individual[address] + 1;
           break;
-        case 1:
+        case 1: // Dekrementácia
+          individual[address] = individual[address] === 0 ? 255 : individual[address] - 1;
           break;
-        case 2:
-          break;
+        case 2: // Skok
+          i = address;
+          continue;
         case 3:
           break;
         default:
