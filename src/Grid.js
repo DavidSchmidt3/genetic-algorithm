@@ -16,7 +16,7 @@ export default class Grid extends React.Component {
                 <div key={`${idx}${idy}`} className="cell player">
                   <img src="/images/miner.png" alt="Poklad" />
                 </div>
-          }).concat(<div className="separator" />);
+          }).concat(<div key={idx} className="separator" />);
         })}
       </>
     )

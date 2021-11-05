@@ -18,7 +18,11 @@ class App extends React.Component {
   }
 
   handleChangeGrid = e => {
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value }, () => {
+      if (e.target.name === 'gridSize') {
+        this.setState({ grid: this.createGrid() });
+      }
+    });
   }
 
   generateRandomInt = () => {
@@ -68,14 +72,14 @@ class App extends React.Component {
     e.preventDefault();
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const text = e.target.result;
+      const text = e.target.result; // Precitam text, urobim z neho 2d array so suradnicami - pozicie pokladov
       let coordinates = text.split("\n").map(item => {
         return item.split(",").map(item => parseInt(item));
-      })
-
+      });
       this.insertTreasures(coordinates);
     };
-    reader.readAsText(e.target.files[0])
+    reader.readAsText(e.target.files[0]);
+    e.target.value = null; // Vyresetujeme input pre dalsie pouzitie
   }
 
   render() {

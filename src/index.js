@@ -2,7 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 import CssBaseline from '@mui/material/CssBaseline';
 
 const darkTheme = createTheme({
@@ -21,4 +20,3 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-reportWebVitals(console.log);
