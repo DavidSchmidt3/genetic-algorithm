@@ -1,7 +1,8 @@
-import { Container } from '@mui/material';
 import Settings from './Settings';
-import Grid from './Grid';
+import Gamegrid from './Grid';
 import React from 'react';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid';
 
 class App extends React.Component {
   constructor(props) {
@@ -25,11 +26,7 @@ class App extends React.Component {
   }
 
   generatePositions = () => {
-    let gridSize = this.state.gridSize;
-
-    // Vytvorenie 2d pola, so samymi nulami
-    let grid = Array.from({ length: gridSize }, () => (Array.from({ length: gridSize }, () => 0)));
-    grid[this.state.y][this.state.x] = 2; // Náš hráč sa nachádza na tejto pozícii
+    let grid = this.createGrid();
 
     // Podla poctu pokladov
     for (let i = 0; i < this.state.count; i++) {
@@ -47,19 +44,60 @@ class App extends React.Component {
     this.setState({ grid });
   }
 
+  // Vytvorenie 2d pola, so samymi nulami
+
+  createGrid = () => {
+    let gridSize = this.state.gridSize;
+    let grid = Array.from({ length: gridSize }, () => (Array.from({ length: gridSize }, () => 0)));
+    grid[this.state.y][this.state.x] = 2; // Náš hráč sa nachádza na tejto pozícii
+
+    return grid;
+  }
+
+  insertTreasures = coordinates => {
+    let grid = this.createGrid();
+    for (let i = 0; i < coordinates.length; i++) {
+      let [x, y] = coordinates[i];
+      grid[y][x] = 1;
+    }
+
+    this.setState({ grid });
+  }
+
+  showFile = async (e) => {
+    e.preventDefault();
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const text = e.target.result;
+      let coordinates = text.split("\n").map(item => {
+        return item.split(",").map(item => parseInt(item));
+      })
+
+      this.insertTreasures(coordinates);
+    };
+    reader.readAsText(e.target.files[0])
+  }
+
   render() {
     return (
-      <Container className="mt-5">
-        <Settings
-          handleChangeGrid={this.handleChangeGrid}
-          generatePositions={this.generatePositions}
-          gridSize={this.state.gridSize}
-          x={this.state.x}
-          y={this.state.y}
-          count={this.state.count}
-        />
-        <Grid grid={this.state.grid} />
-      </Container>
+      <Box className="m-5" sx={{ flexGrow: 1 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={4}>
+            <Settings
+              handleChangeGrid={this.handleChangeGrid}
+              generatePositions={this.generatePositions}
+              gridSize={this.state.gridSize}
+              x={this.state.x}
+              y={this.state.y}
+              count={this.state.count}
+              showFile={this.showFile}
+            />
+          </Grid>
+          <Grid className="mt-5" item xs={8}>
+            <Gamegrid grid={this.state.grid} />
+          </Grid>
+        </Grid>
+      </Box>
     )
   }
 }
