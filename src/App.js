@@ -13,7 +13,8 @@ class App extends React.Component {
       grid: [],
       x: 0,
       y: 0,
-      count: 1
+      count: 1,
+      populationCount: 20
     };
   }
 
@@ -25,7 +26,7 @@ class App extends React.Component {
     });
   }
 
-  generateRandomInt = () => {
+  generateRandomPosition = () => {
     return Math.floor(Math.random() * this.state.gridSize);
   }
 
@@ -35,8 +36,8 @@ class App extends React.Component {
     // Podla poctu pokladov
     for (let i = 0; i < this.state.count; i++) {
       while (true) { // Generujeme poziciu
-        let x = this.generateRandomInt();
-        let y = this.generateRandomInt();
+        let x = this.generateRandomPosition();
+        let y = this.generateRandomPosition();
 
         if (grid[y][x] === 0) {   // Overenie, ci sa na danej pozicii uz nenachadza poklad
           grid[y][x] = 1; // Umiestnenie pokladu
@@ -49,7 +50,6 @@ class App extends React.Component {
   }
 
   // Vytvorenie 2d pola, so samymi nulami
-
   createGrid = () => {
     let gridSize = this.state.gridSize;
     let grid = Array.from({ length: gridSize }, () => (Array.from({ length: gridSize }, () => 0)));
@@ -82,6 +82,65 @@ class App extends React.Component {
     e.target.value = null; // Vyresetujeme input pre dalsie pouzitie
   }
 
+  changePopulation = e => {
+    let value = +e.target.value;
+    if (!isNaN(value)) {
+      value = value < 20 ? 20 : value;
+      this.setState({ populationCount: value });
+    }
+  }
+
+  generateCell = () => {
+    return Math.floor(Math.random() * 256);
+  }
+
+  startSimulation = () => {
+    let population = [];
+    for (let i = 0; i < this.state.populationCount; i++) { // Vytvorime si dany pocet jedincov
+      let individual = [];
+      for (let j = 0; j < 64; j++) { // Kazdy jedinec ma 64 buniek
+        individual.push(this.generateCell());
+      }
+      population.push(individual);
+    }
+
+    for (let i = 0; i < this.state.populationCount; i++) {
+      this.runSimulation(population[i]);
+    }
+  }
+
+  dec2bin = dec => {
+    return (dec >>> 0).toString(2).padStart(8, '0'); // Konverzia desiatkove cisla na 8 bitove binarne
+  }
+
+  getInstruction = dec => {
+    return this.dec2bin(dec).substring(0, 2);
+  }
+
+  getAdress = dec => {
+    return this.dec2bin(dec).substring(2, 8);
+  }
+
+  runSimulation = individual => {
+    for (let i = 0; i < individual.length; i++) {
+      let instruction = parseInt(this.getInstruction(individual[i]), 2);
+      let address = parseInt(this.getAdress(individual[i]), 2);
+      console.log(individual[i], instruction, address);
+      switch (instruction) {
+        case 0:
+          break;
+        case 1:
+          break;
+        case 2:
+          break;
+        case 3:
+          break;
+        default:
+          throw new Error("Chyba");
+      }
+    }
+  }
+
   render() {
     return (
       <Box className="m-5" sx={{ flexGrow: 1 }}>
@@ -94,7 +153,10 @@ class App extends React.Component {
               x={this.state.x}
               y={this.state.y}
               count={this.state.count}
+              startSimulation={this.startSimulation}
               showFile={this.showFile}
+              changePopulation={this.changePopulation}
+              populationCount={this.state.populationCount}
             />
           </Grid>
           <Grid className="mt-5" item xs={8}>

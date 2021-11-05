@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
+import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
 
 export default class Settings extends React.Component {
@@ -72,6 +73,15 @@ export default class Settings extends React.Component {
             )}
           </Select>
         </FormControl>
+        <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
+          <TextField
+            onChange={this.props.changePopulation}
+            id="populationCount"
+            label="Počet jedincov v populácii"
+            value={this.props.populationCount}
+            variant="filled"
+          />
+        </FormControl>
         <div className="m-2">
           <Button onClick={this.props.generatePositions} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
           <Button className="button-2" variant="outlined" component="label">
@@ -82,6 +92,7 @@ export default class Settings extends React.Component {
               hidden
             />
           </Button>
+          <Button onClick={this.props.startSimulation} className="ml-5 button-3" variant="outlined">Začať simuláciu</Button>
         </div>
       </>
     );
