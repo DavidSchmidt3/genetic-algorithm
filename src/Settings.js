@@ -16,9 +16,9 @@ export default class Settings extends React.Component {
             <InputLabel id="gridLabel">Veľkosť mriežky</InputLabel>
             <Select
               labelId="gridLabel"
-              id="grid"
-              name="grid"
-              value={this.props.grid}
+              id="gridSize"
+              name="gridSize"
+              value={this.props.gridSize}
               label="Veľkosť mriežky"
               onChange={this.props.handleChangeGrid}
             >
@@ -40,7 +40,7 @@ export default class Settings extends React.Component {
               label="Začiatočná pozícia x"
               onChange={this.props.handleChangeGrid}
             >
-              {[...Array(this.props.grid)].map((i, x) =>
+              {[...Array(this.props.gridSize)].map((i, x) =>
                 <MenuItem key={x} value={x}>{x}</MenuItem>
               )}
             </Select>
@@ -57,7 +57,7 @@ export default class Settings extends React.Component {
               label="Začiatočná pozícia y"
               onChange={this.props.handleChangeGrid}
             >
-              {[...Array(this.props.grid)].map((i, y) =>
+              {[...Array(this.props.gridSize)].map((i, y) =>
                 <MenuItem key={y} value={y}>{y}</MenuItem>
               )}
             </Select>
