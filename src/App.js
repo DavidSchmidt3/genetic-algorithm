@@ -124,8 +124,9 @@ export default class App extends React.Component {
     // Pre kazdeho jedinca zbehnem simulaciu
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
-      let stats = this.runSimulation(individual);
-      console.log(stats);
+      const stats = this.runSimulation(individual);
+      const fitness = stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+
     }
   }
 
