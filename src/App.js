@@ -114,7 +114,7 @@ class App extends React.Component {
     // Pre kazdeho jedinca zbehneme simulaciu
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
-      let success = this.runSimulation(individual);
+      let stats = this.runSimulation(individual);
     }
   }
 
@@ -204,7 +204,8 @@ class App extends React.Component {
     let grid = this.cloneGrid(this.state.grid); // Klonovanie gridu, aby sme nemodifikovali povodny
     let stats = { // Informacia o najdenych pokladoch a vykonanych krokoch
       treasuresFound: 0,
-      moveCount: 0
+      moveCount: 0,
+      success: null
     };
 
     for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
@@ -227,20 +228,24 @@ class App extends React.Component {
           for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
             const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
             const success = this.applyMove(moveNumber, grid, stats);
-            if (!success)
-              return false;
+            if (!success) // Hrac vysiel mimo mapy
+              return { ...stats, success: false, error: true };
+
+            if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
+              return { ...stats, success: true };
+
+            if (stats.moveCount === 500) // Prebehlo 500 krokov
+              return { ...stats, success: false };
           }
           break;
         default:
           throw new Error("Chyba");
       }
+      if (stats.moveCount === 500) // Prebehlo 500 krokov
+        return { ...stats, success: false };
     }
 
-    this.applySteps()
-  }
-
-  applySteps = steps => {
-
+    return { ...stats, success: false };
   }
 
   render() {
