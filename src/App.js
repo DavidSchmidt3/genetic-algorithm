@@ -115,11 +115,13 @@ class App extends React.Component {
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
       let stats = this.runSimulation(individual);
+      console.log(stats);
     }
   }
 
+  // Konverzia desiatkove cisla na 8 bitove binarne
   dec2bin = dec => {
-    return (dec >>> 0).toString(2).padStart(8, '0'); // Konverzia desiatkove cisla na 8 bitove binarne
+    return (dec >>> 0).toString(2).padStart(8, '0');
   }
 
   getInstruction = dec => {
@@ -209,6 +211,8 @@ class App extends React.Component {
     };
 
     for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
+      if (stats.moveCount === 500) // Prebehlo 500 krokov
+        return { ...stats, success: false };
       let instruction = parseInt(this.getInstruction(individual[i]), 2);
       let address = parseInt(this.getAdress(individual[i]), 2);
       switch (instruction) {
@@ -241,8 +245,6 @@ class App extends React.Component {
         default:
           throw new Error("Chyba");
       }
-      if (stats.moveCount === 500) // Prebehlo 500 krokov
-        return { ...stats, success: false };
     }
 
     return { ...stats, success: false };
