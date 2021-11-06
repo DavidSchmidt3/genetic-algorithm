@@ -27,3 +27,8 @@
   margin-top: 10px !important;
   padding: 10px 143px !important;
 }
+
+.settings {
+  margin-left: 50%;
+  transform: translateX(-50%);
+}

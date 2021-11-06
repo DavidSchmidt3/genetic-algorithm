@@ -9,7 +9,7 @@ import Select from '@mui/material/Select';
 export default class Settings extends React.Component {
   render() {
     return (
-      <>
+      <div className="settings">
         <h2 className="m-2">Úvodné nastavenie</h2>
         <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
           <InputLabel id="gridLabel">Veľkosť mriežky</InputLabel>
@@ -73,6 +73,7 @@ export default class Settings extends React.Component {
             )}
           </Select>
         </FormControl>
+        <br />
         <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
           <TextField
             onChange={this.props.changePopulation}
@@ -85,6 +86,7 @@ export default class Settings extends React.Component {
         </FormControl>
         <div className="m-2">
           <Button onClick={this.props.generatePositions} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
+          <br />
           <Button className="button-2" variant="outlined" component="label">
             Nahraj súbor so súradnicami
             <input
@@ -93,9 +95,10 @@ export default class Settings extends React.Component {
               hidden
             />
           </Button>
+          <br />
           <Button onClick={this.props.startSimulation} className="ml-5 button-3" variant="outlined">Začať simuláciu</Button>
         </div>
-      </>
+      </div>
     );
   }
 }

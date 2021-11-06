@@ -115,7 +115,8 @@ class App extends React.Component {
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
       let stats = this.runSimulation(individual);
-      console.log(stats);
+      if (stats.success)
+        console.log(stats);
     }
   }
 
@@ -207,7 +208,8 @@ class App extends React.Component {
     let stats = { // Informacia o najdenych pokladoch a vykonanych krokoch
       treasuresFound: 0,
       moveCount: 0,
-      success: null
+      success: null,
+      moves: []
     };
 
     for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
@@ -231,6 +233,7 @@ class App extends React.Component {
         case 3: // Výpis
           for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
             const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
+            stats.moves.push(moveNumber);
             const success = this.applyMove(moveNumber, grid, stats);
             if (!success) // Hrac vysiel mimo mapy
               return { ...stats, success: false, error: true };
@@ -252,28 +255,31 @@ class App extends React.Component {
 
   render() {
     return (
-      <Box className="m-5" sx={{ flexGrow: 1 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={4}>
-            <Settings
-              handleChangeGrid={this.handleChangeGrid}
-              generatePositions={this.generatePositions}
-              gridSize={this.state.gridSize}
-              x={this.state.x}
-              y={this.state.y}
-              count={this.state.count}
-              startSimulation={this.startSimulation}
-              showFile={this.showFile}
-              changePopulation={this.changePopulation}
-              setPopulation={this.setPopulation}
-              populationCount={this.state.populationCount}
-            />
+      <div className="mx-auto">
+        <Box className="m-5">
+          <Grid className="mx-auto" container spacing={2}>
+            <Grid item xs={6} className="mx-auto">
+              <Settings
+                handleChangeGrid={this.handleChangeGrid}
+                generatePositions={this.generatePositions}
+                gridSize={this.state.gridSize}
+                x={this.state.x}
+                y={this.state.y}
+                count={this.state.count}
+                startSimulation={this.startSimulation}
+                showFile={this.showFile}
+                changePopulation={this.changePopulation}
+                setPopulation={this.setPopulation}
+                populationCount={this.state.populationCount}
+              />
+            </Grid>
+            <Grid className="mt-5" item xs={6}>
+              <Gamegrid grid={this.state.grid} />
+            </Grid>
           </Grid>
-          <Grid className="mt-5" item xs={8}>
-            <Gamegrid grid={this.state.grid} />
-          </Grid>
-        </Grid>
-      </Box>
+        </Box>
+      </div>
+
     )
   }
 }
