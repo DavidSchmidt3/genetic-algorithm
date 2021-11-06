@@ -14,15 +14,21 @@ class App extends React.Component {
       x: 0,
       y: 0,
       count: 1,
-      populationCount: 20
+      populationCount: 20,
+      continue: true
     };
   }
 
   handleChangeGrid = e => {
     this.setState({ [e.target.name]: e.target.value }, () => {
-      if (e.target.name === 'gridSize') {
+      if (e.target.name === 'gridSize')
+        this.setState({ x: 0, y: 0 }, () => {
+          this.setState({ grid: this.createGrid() });
+        });
+      if (e.target.name === 'count')
+        this.generatePositions();
+      else
         this.setState({ grid: this.createGrid() });
-      }
     });
   }
 
@@ -253,6 +259,10 @@ class App extends React.Component {
     return { ...stats, success: false };
   }
 
+  handleContinueChange = e => {
+    this.setState({ continue: e.target.checked });
+  }
+
   render() {
     return (
       <div className="mx-auto">
@@ -271,6 +281,8 @@ class App extends React.Component {
                 changePopulation={this.changePopulation}
                 setPopulation={this.setPopulation}
                 populationCount={this.state.populationCount}
+                continue={this.state.continue}
+                handleContinueChange={this.handleContinueChange}
               />
             </Grid>
             <Grid className="mt-5" item xs={6}>

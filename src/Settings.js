@@ -5,6 +5,9 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
+
 
 export default class Settings extends React.Component {
   render() {
@@ -84,6 +87,11 @@ export default class Settings extends React.Component {
             variant="filled"
           />
         </FormControl>
+        <div className="m-2">
+          <FormControl>
+            <FormControlLabel control={<Switch checked={this.props.continue} onChange={this.props.handleContinueChange} />} label="Pokračovať po poslednej bunke" />
+          </FormControl>
+        </div>
         <div className="m-2">
           <Button onClick={this.props.generatePositions} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
           <br />
