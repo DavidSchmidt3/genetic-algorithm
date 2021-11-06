@@ -4,7 +4,7 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 
-class App extends React.Component {
+export default class App extends React.Component {
   constructor(props) {
     super(props);
 
@@ -30,6 +30,10 @@ class App extends React.Component {
       else
         this.setState({ grid: this.createGrid() });
     });
+  }
+
+  handleContinueChange = e => {
+    this.setState({ continue: e.target.checked });
   }
 
   generateRandomPosition = () => {
@@ -117,12 +121,11 @@ class App extends React.Component {
       population.push(individual);
     }
 
-    // Pre kazdeho jedinca zbehneme simulaciu
+    // Pre kazdeho jedinca zbehnem simulaciu
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
       let stats = this.runSimulation(individual);
-      if (stats.success)
-        console.log(stats);
+      console.log(stats);
     }
   }
 
@@ -147,7 +150,7 @@ class App extends React.Component {
   cloneIndividual = individual => {
     return individual.map(item => {
       return item;
-    })
+    });
   }
 
   // Klonovanie gridu
@@ -155,8 +158,8 @@ class App extends React.Component {
     return grid.map(outerArray => {
       return outerArray.map(number => {
         return number;
-      })
-    })
+      });
+    });
   }
 
   // Hladanie hraca v gride
@@ -217,50 +220,50 @@ class App extends React.Component {
       success: null,
       moves: []
     };
+    let firstTime = true;
 
-    for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
-      if (stats.moveCount === 500) // Prebehlo 500 krokov
-        return { ...stats, success: false };
-      let instruction = parseInt(this.getInstruction(individual[i]), 2);
-      let address = parseInt(this.getAdress(individual[i]), 2);
-      switch (instruction) {
-        case 0: // Inkrementácia
-          individual[address] = individual[address] === 255 ? 0 : individual[address] + 1;
-          stats.moveCount++;
-          break;
-        case 1: // Dekrementácia
-          individual[address] = individual[address] === 0 ? 255 : individual[address] - 1
-          stats.moveCount++;;
-          break;
-        case 2: // Skok
-          i = address;
-          stats.moveCount++;
-          continue;
-        case 3: // Výpis
-          for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
-            const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
-            stats.moves.push(moveNumber);
-            const success = this.applyMove(moveNumber, grid, stats);
-            if (!success) // Hrac vysiel mimo mapy
-              return { ...stats, success: false, error: true };
+    while (firstTime || this.state.continue) { // Ak chcem pokracovat od zaciatku
+      firstTime = false;
+      for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
+        if (stats.moveCount === 500) // Prebehlo 500 krokov
+          return { ...stats, success: false };
+        let instruction = parseInt(this.getInstruction(individual[i]), 2);
+        let address = parseInt(this.getAdress(individual[i]), 2);
+        switch (instruction) {
+          case 0: // Inkrementácia
+            individual[address] = individual[address] === 255 ? 0 : individual[address] + 1;
+            stats.moveCount++;
+            break;
+          case 1: // Dekrementácia
+            individual[address] = individual[address] === 0 ? 255 : individual[address] - 1
+            stats.moveCount++;;
+            break;
+          case 2: // Skok
+            i = address;
+            stats.moveCount++;
+            continue;
+          case 3: // Výpis
+            for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
+              const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
+              stats.moves.push(moveNumber);
+              const success = this.applyMove(moveNumber, grid, stats);
+              if (!success) // Hrac vysiel mimo mapy
+                return { ...stats, success: false, error: true };
 
-            if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
-              return { ...stats, success: true };
+              if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
+                return { ...stats, success: true };
 
-            if (stats.moveCount === 500) // Prebehlo 500 krokov
-              return { ...stats, success: false };
-          }
-          break;
-        default:
-          throw new Error("Chyba");
+              if (stats.moveCount === 500) // Prebehlo 500 krokov
+                return { ...stats, success: false };
+            }
+            break;
+          default:
+            throw new Error("Chyba");
+        }
       }
     }
 
     return { ...stats, success: false };
-  }
-
-  handleContinueChange = e => {
-    this.setState({ continue: e.target.checked });
   }
 
   render() {
@@ -291,9 +294,6 @@ class App extends React.Component {
           </Grid>
         </Box>
       </div>
-
-    )
+    );
   }
 }
-
-export default App;
