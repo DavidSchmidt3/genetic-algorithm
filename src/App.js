@@ -103,7 +103,7 @@ class App extends React.Component {
 
   startSimulation = () => {
     let population = [];
-    for (let i = 0; i < this.state.populationCount; i++) { // Vytvorime si dany pocet jedincov
+    for (let i = 0; i < this.state.populationCount; i++) { // Vytvorim si dany pocet jedincov
       let individual = [];
       for (let j = 0; j < 64; j++) { // Kazdy jedinec ma 64 buniek
         individual.push(this.generateCell());
@@ -111,9 +111,10 @@ class App extends React.Component {
       population.push(individual);
     }
 
+    // Pre kazdeho jedinca zbehneme simulaciu
     for (let i = 0; i < this.state.populationCount; i++) {
       let individual = this.cloneIndividual(population[i]);
-      this.runSimulation(individual);
+      let success = this.runSimulation(individual);
     }
   }
 
@@ -129,33 +130,117 @@ class App extends React.Component {
     return this.dec2bin(dec).substring(2, 8);
   }
 
+  getLast2Bits = dec => {
+    return this.dec2bin(dec).substring(6, 8);
+  }
+
+  // Klonovanie jedinca
   cloneIndividual = individual => {
     return individual.map(item => {
       return item;
     })
   }
 
+  // Klonovanie gridu
+  cloneGrid = grid => {
+    return grid.map(outerArray => {
+      return outerArray.map(number => {
+        return number;
+      })
+    })
+  }
+
+  // Hladanie hraca v gride
+  findPlayer = grid => {
+    for (let y = 0; y < this.state.gridSize; y++) {
+      for (let x = 0; x < this.state.gridSize; x++) {
+        if (grid[y][x] === 2) {
+          return { playerX: x, playerY: y };
+        }
+      }
+    }
+    throw new Error("Player not found");
+  }
+
+  changeGrid = (oldX, oldY, newX, newY, grid, stats) => {
+    if (newY < 0 || newY >= this.state.gridSize || newX < 0 || newX >= this.state.gridSize)
+      return false; // Hrac vysiel z mriezky, nema zmysel pokracovat
+
+    if (grid[newY][newX] === 1) // Hrac nasiel poklad
+      stats.treasuresFound++;
+
+    grid[oldY][oldX] = 0; // Premazem staru poziciu
+    grid[newY][newX] = 2; // Premazem poklad, teda nastavim hraca na danu poziciu.
+
+    return true;
+  }
+
+  applyMove = (moveNumber, grid, stats) => {
+    const { playerX, playerY } = this.findPlayer(grid); // Ziskam suradnicu hraca
+    stats.moveCount++; // Urobil som krok
+
+    let success;
+    switch (moveNumber) { // Podla cisla pohybu urobim krok
+      case 0:
+        success = this.changeGrid(playerX, playerY, playerX, playerY - 1, grid, stats);
+        break;
+      case 1:
+        success = this.changeGrid(playerX, playerY, playerX, playerY + 1, grid, stats);
+        break;
+      case 2:
+        success = this.changeGrid(playerX, playerY, playerX + 1, playerY, grid, stats);
+        break;
+      case 3:
+        success = this.changeGrid(playerX, playerY, playerX - 1, playerY, grid, stats);
+        break;
+      default:
+        throw new Error("Bad move");
+    }
+
+    return success;
+  }
+
   runSimulation = individual => {
-    let steps = [];
-    for (let i = 0; i < individual.length; i++) {
+    let grid = this.cloneGrid(this.state.grid); // Klonovanie gridu, aby sme nemodifikovali povodny
+    let stats = { // Informacia o najdenych pokladoch a vykonanych krokoch
+      treasuresFound: 0,
+      moveCount: 0
+    };
+
+    for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
       let instruction = parseInt(this.getInstruction(individual[i]), 2);
       let address = parseInt(this.getAdress(individual[i]), 2);
       switch (instruction) {
         case 0: // Inkrementácia
           individual[address] = individual[address] === 255 ? 0 : individual[address] + 1;
+          stats.moveCount++;
           break;
         case 1: // Dekrementácia
-          individual[address] = individual[address] === 0 ? 255 : individual[address] - 1;
+          individual[address] = individual[address] === 0 ? 255 : individual[address] - 1
+          stats.moveCount++;;
           break;
         case 2: // Skok
           i = address;
+          stats.moveCount++;
           continue;
-        case 3:
+        case 3: // Výpis
+          for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
+            const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
+            const success = this.applyMove(moveNumber, grid, stats);
+            if (!success)
+              return false;
+          }
           break;
         default:
           throw new Error("Chyba");
       }
     }
+
+    this.applySteps()
+  }
+
+  applySteps = steps => {
+
   }
 
   render() {
