@@ -94,13 +94,13 @@ export default class App extends React.Component {
   }
 
   changePopulation = e => {
-    this.setState({ populationCount: e.target.value });
+    this.setState({ populationCount: parseInt(e.target.value) });
   }
 
   setPopulation = () => {
     let value = this.state.populationCount;
     if (!isNaN(value)) {
-      value = value < 20 ? 20 : value;
+      value = value < 20 ? 20 : value % 2 === 1 ? value + 1 : value;
       this.setState({ populationCount: value });
     }
     else {
@@ -136,7 +136,7 @@ export default class App extends React.Component {
       if (number > fitnessArray[i] && number < fitnessArray[i + 1])
         return i;
     }
-    throw new Error("Numbeer not found!");
+    throw new Error("Number not found!");
   }
 
   createFirstPopulation = () => {
@@ -152,6 +152,20 @@ export default class App extends React.Component {
     return population;
   }
 
+  mergeIndividuals = (individual1, individual2) => {
+    let newIndividual = []; // Novy jedince
+    let randomIndex = Math.floor(Math.random() * 64);
+
+    for (let i = 0; i < randomIndex; i++) { // Prva cast bude z prveho jedinca
+      newIndividual.push(individual1[i]);
+    }
+    for (let i = randomIndex; i < 64; i++) { // Druha cast z druheho jedinca
+      newIndividual.push(individual2[i]);
+    }
+
+    return newIndividual;
+  }
+
   startSimulation = () => {
     let population = this.createFirstPopulation();
     let generation = population;
@@ -163,21 +177,23 @@ export default class App extends React.Component {
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
         let individual = this.cloneIndividual(generation[j]);
         const stats = this.runSimulation(individual);
-        const fitness = stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        let fitness = stats.treasuresFound - 0.001 * stats.moveCount < 0 ? 0 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
         fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
-        fitnessArray.push(fitness + fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
+        fitnessArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
         if (stats.success) { // Hrac nasiel vsetky poklady
           this.setState({ sucessIndividual: stats });
           break outerArray;
         }
       }
       let indexArray = [];
-      for (let j = 0; j < Math.floor(this.state.populationCount / 2); j++) {
+      while (newGeneration.length < this.state.populationCount) { // Pokym nemam kompletnu novu populaciu
         while (true) {
-          const index = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
-          if (!indexArray.includes(index)) { // Pokial je index unikatny
-
-            indexArray.push(index);
+          const index1 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray); // Ruleta, vyber nahodnych jedincov podla fitness
+          const index2 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
+          if (!indexArray.includes(index1) && !indexArray.includes(index2) && (index1 !== index2)) { // Vyberam roznych potomkov, zaroven tych, co neboli vybrati
+            let newIndividual1 = this.mergeIndividuals(generation[index1], generation[index2]); // Krizenie
+            let newIndividual2 = this.mergeIndividuals(generation[index1], generation[index2]);
+            newGeneration.push(newIndividual1, newIndividual2);
             break;
           }
         }
