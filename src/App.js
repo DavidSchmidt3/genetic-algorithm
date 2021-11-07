@@ -15,6 +15,7 @@ export default class App extends React.Component {
       y: 0,
       count: 1,
       populationCount: 20,
+      generationCount: 20,
       continue: true
     };
   }
@@ -107,11 +108,26 @@ export default class App extends React.Component {
     }
   }
 
+  changeGeneration = e => {
+    this.setState({ generationCount: e.target.value });
+  }
+
+  setGenerations = () => {
+    let value = this.state.generationCount;
+    if (!isNaN(value)) {
+      value = value < 20 ? 20 : value;
+      this.setState({ generationCount: value });
+    }
+    else {
+      this.setState({ generationCount: 20 });
+    }
+  }
+
   generateCell = () => {
     return Math.floor(Math.random() * 256);
   }
 
-  startSimulation = () => {
+  createFirstPopulation = () => {
     let population = [];
     for (let i = 0; i < this.state.populationCount; i++) { // Vytvorim si dany pocet jedincov
       let individual = [];
@@ -121,15 +137,29 @@ export default class App extends React.Component {
       population.push(individual);
     }
 
-    // Pre kazdeho jedinca zbehnem simulaciu
-    for (let i = 0; i < this.state.populationCount; i++) {
-      let individual = this.cloneIndividual(population[i]);
-      const stats = this.runSimulation(individual);
-      const fitness = stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
-      if (stats.success) { // Hrac nasiel vsetky poklady
-        this.setState({ sucessIndividual: stats });
-        break;
+    return population;
+  }
+
+  startSimulation = () => {
+    let population = this.createFirstPopulation();
+    let generation = population;
+    for (let i = 0; i < this.state.generationCount; i++) {
+      let newGeneration = [];
+      let fitnessArray = [];
+      for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
+        let individual = this.cloneIndividual(generation[j]);
+        const stats = this.runSimulation(individual);
+
+        fitnessArray.push(stats.treasuresFound - 0.001 * stats.moveCount); // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        if (stats.success) { // Hrac nasiel vsetky poklady
+          this.setState({ sucessIndividual: stats });
+          break;
+        }
       }
+      for (let j = 0; j < Math.floor(this.state.populationCount / 2); j++) {
+
+      }
+      generation = newGeneration;
     }
   }
 
@@ -239,7 +269,7 @@ export default class App extends React.Component {
             stats.moveCount++;
             break;
           case 1: // Dekrementácia
-            individual[address] = individual[address] === 0 ? 255 : individual[address] - 1
+            individual[address] = individual[address] === 0 ? 255 : individual[address] - 1;
             stats.moveCount++;;
             break;
           case 2: // Skok
@@ -247,19 +277,17 @@ export default class App extends React.Component {
             stats.moveCount++;
             continue;
           case 3: // Výpis
-            for (let j = 0; j < i; j++) { // Začíname od prvej bunky až po aktuálnu
-              const moveNumber = parseInt(this.getLast2Bits(individual[j]), 2);
-              stats.moves.push(moveNumber);
-              const success = this.applyMove(moveNumber, grid, stats);
-              if (!success) // Hrac vysiel mimo mapy
-                return { ...stats, success: false, error: true };
+            const moveNumber = parseInt(this.getLast2Bits(individual[address]), 2);
+            stats.moves.push(moveNumber);
+            const validMove = this.applyMove(moveNumber, grid, stats);
+            if (!validMove) // Hrac vysiel mimo mapy
+              return { ...stats, success: false, error: true };
 
-              if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
-                return { ...stats, success: true };
+            if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
+              return { ...stats, success: true };
 
-              if (stats.moveCount === 500) // Prebehlo 500 krokov
-                return { ...stats, success: false };
-            }
+            if (stats.moveCount === 500) // Prebehlo 500 krokov
+              return { ...stats, success: false };
             break;
           default:
             throw new Error("Chyba");
@@ -290,6 +318,9 @@ export default class App extends React.Component {
                 populationCount={this.state.populationCount}
                 continue={this.state.continue}
                 handleContinueChange={this.handleContinueChange}
+                generationCount={this.state.generationCount}
+                changeGeneration={this.changeGeneration}
+                setGenerations={this.setGenerations}
               />
             </Grid>
             <Grid className="mt-5" item xs={6}>

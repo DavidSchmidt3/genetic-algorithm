@@ -87,6 +87,16 @@ export default class Settings extends React.Component {
             variant="filled"
           />
         </FormControl>
+        <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
+          <TextField
+            onChange={this.props.changeGeneration}
+            id="generationCount"
+            label="Počet generácii v populácii"
+            value={this.props.generationCount}
+            onBlur={this.props.setGenerations}
+            variant="filled"
+          />
+        </FormControl>
         <div className="m-2">
           <FormControl>
             <FormControlLabel control={<Switch checked={this.props.continue} onChange={this.props.handleContinueChange} />} label="Pokračovať po poslednej bunke" />
