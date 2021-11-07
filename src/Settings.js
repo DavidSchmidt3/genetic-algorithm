@@ -91,7 +91,7 @@ export default class Settings extends React.Component {
           <TextField
             onChange={this.props.changeGeneration}
             id="generationCount"
-            label="Počet generácii v populácii"
+            label="Počet generácii"
             value={this.props.generationCount}
             onBlur={this.props.setGenerations}
             variant="filled"

@@ -127,6 +127,18 @@ export default class App extends React.Component {
     return Math.floor(Math.random() * 256);
   }
 
+  chooseFromInterval = max => {
+    return Math.random() * max;
+  }
+
+  findIndex = (number, fitnessArray) => {
+    for (let i = 0; i < this.state.populationCount; i++) {
+      if (number > fitnessArray[i] && number < fitnessArray[i + 1])
+        return i;
+    }
+    throw new Error("Numbeer not found!");
+  }
+
   createFirstPopulation = () => {
     let population = [];
     for (let i = 0; i < this.state.populationCount; i++) { // Vytvorim si dany pocet jedincov
@@ -143,21 +155,32 @@ export default class App extends React.Component {
   startSimulation = () => {
     let population = this.createFirstPopulation();
     let generation = population;
+    outerArray:
     for (let i = 0; i < this.state.generationCount; i++) {
       let newGeneration = [];
       let fitnessArray = [];
+      let fitnessSum = 0;
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
         let individual = this.cloneIndividual(generation[j]);
         const stats = this.runSimulation(individual);
-
-        fitnessArray.push(stats.treasuresFound - 0.001 * stats.moveCount); // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        const fitness = stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
+        fitnessArray.push(fitness + fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
         if (stats.success) { // Hrac nasiel vsetky poklady
           this.setState({ sucessIndividual: stats });
-          break;
+          break outerArray;
         }
       }
+      let indexArray = [];
       for (let j = 0; j < Math.floor(this.state.populationCount / 2); j++) {
+        while (true) {
+          const index = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
+          if (!indexArray.includes(index)) { // Pokial je index unikatny
 
+            indexArray.push(index);
+            break;
+          }
+        }
       }
       generation = newGeneration;
     }
