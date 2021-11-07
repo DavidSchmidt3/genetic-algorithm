@@ -88,6 +88,7 @@ export default class App extends React.Component {
         return item.split(",").map(item => parseInt(item));
       });
       this.insertTreasures(coordinates);
+      this.setState({ count: coordinates.length });
     };
     reader.readAsText(e.target.files[0]);
     e.target.value = null; // Vyresetujeme input pre dalsie pouzitie
@@ -132,8 +133,10 @@ export default class App extends React.Component {
   }
 
   findIndex = (number, fitnessArray) => {
+    if (number < fitnessArray[0])
+      return 0;
     for (let i = 0; i < this.state.populationCount; i++) {
-      if (number > fitnessArray[i] && number < fitnessArray[i + 1])
+      if (number >= fitnessArray[i] && number <= fitnessArray[i + 1])
         return i;
     }
     throw new Error("Number not found!");
@@ -166,6 +169,14 @@ export default class App extends React.Component {
     return newIndividual;
   }
 
+  mutateIndivual = individual => {
+    const number = Math.floor(Math.random() * 10); // Sanca mutacie 1 k 10
+    if (number === 0) {
+      const index = Math.floor(Math.random() * 64);
+      individual[index] = Math.floor(Math.random() * 256);
+    }
+  }
+
   startSimulation = () => {
     let population = this.createFirstPopulation();
     let generation = population;
@@ -177,7 +188,8 @@ export default class App extends React.Component {
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
         let individual = this.cloneIndividual(generation[j]);
         const stats = this.runSimulation(individual);
-        let fitness = stats.treasuresFound - 0.001 * stats.moveCount < 0 ? 0 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        let fitness = stats.treasuresFound - 0.001 * stats.moveCount <= 0 ? 0.05 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
+        console.log(stats);
         fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
         fitnessArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
         if (stats.success) { // Hrac nasiel vsetky poklady
@@ -185,17 +197,16 @@ export default class App extends React.Component {
           break outerArray;
         }
       }
-      let indexArray = [];
+      // let indexArray = [];
       while (newGeneration.length < this.state.populationCount) { // Pokym nemam kompletnu novu populaciu
-        while (true) {
-          const index1 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray); // Ruleta, vyber nahodnych jedincov podla fitness
-          const index2 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
-          if (!indexArray.includes(index1) && !indexArray.includes(index2) && (index1 !== index2)) { // Vyberam roznych potomkov, zaroven tych, co neboli vybrati
-            let newIndividual1 = this.mergeIndividuals(generation[index1], generation[index2]); // Krizenie
-            let newIndividual2 = this.mergeIndividuals(generation[index1], generation[index2]);
-            newGeneration.push(newIndividual1, newIndividual2);
-            break;
-          }
+        const index1 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray); // Ruleta, vyber nahodnych jedincov podla fitness
+        const index2 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
+        if ((index1 !== index2)) { // Vyberam roznych potomkov
+          let newIndividual1 = this.mergeIndividuals(generation[index1], generation[index2]); // Krizenie
+          let newIndividual2 = this.mergeIndividuals(generation[index1], generation[index2]);
+          this.mutateIndivual(newIndividual1);
+          this.mutateIndivual(newIndividual2);
+          newGeneration.push(newIndividual1, newIndividual2);
         }
       }
       generation = newGeneration;
