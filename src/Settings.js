@@ -126,14 +126,15 @@ export default class Settings extends React.Component {
             <Slider
               className="slider"
               aria-label="Podiel elitárstva"
-              defaultValue={25}
+              onChange={this.props.changeElitismRatio}
+              value={this.props.elitismRatio}
               disabled={!this.props.elitism}
               getAriaValueText={this.valueText}
               valueLabelDisplay="on"
               valueLabelFormat={this.valueText}
               step={5}
               marks
-              min={0}
+              min={10}
               max={100}
             />
           </Box>

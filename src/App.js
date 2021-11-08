@@ -19,7 +19,8 @@ export default class App extends React.Component {
       generationCount: 20,
       continue: true,
       elitism: true,
-      parentSelection: parentSelection.roulette
+      elitismRatio: 10,
+      parentSelection: parentSelection.roulette,
     };
   }
 
@@ -120,6 +121,10 @@ export default class App extends React.Component {
     this.setState({ parentSelection: e.target.value });
   }
 
+  changeElitismRatio = e => {
+    this.setState({ elitismRatio: Number(e.target.value) });
+  }
+
   setGenerations = () => {
     let value = this.state.generationCount;
     if (!isNaN(value)) {
@@ -184,37 +189,67 @@ export default class App extends React.Component {
     }
   }
 
+  pushBestInvidivuals = (fitnessArray, generation, newGeneration, desiredCount) => {
+    let combinedArray = [];
+    for (let j = 0; j < this.state.populationCount; j++)
+      combinedArray.push({ 'fitness': fitnessArray[j], 'individual': generation[j] });
+
+    combinedArray.sort((a, b) => {
+      return (b.fitness - a.fitness);
+    });
+
+    for (let j = 0; j < this.state.populationCount - desiredCount; j++) {
+      newGeneration.push(combinedArray[j].individual);
+    }
+  }
+
+  getDesiredCount = () => {
+    if (this.state.elitism) {
+      let desiredCount = this.state.populationCount - Math.floor((this.state.elitismRatio / 100) * this.state.populationCount);
+      return desiredCount % 2 === 1 ? desiredCount - 1 : desiredCount;
+    } else {
+      return this.state.populationCount;
+    }
+  }
+
   startSimulation = () => {
     let population = this.createFirstPopulation();
     let generation = population;
+
     outerArray:
     for (let i = 0; i < this.state.generationCount; i++) {
-      let newGeneration = [];
-      let fitnessArray = [];
-      let fitnessSum = 0;
+      let newGeneration = [], fitnessArray = [], fitnessSumArray = [], fitnessSum = 0;
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
         let individual = this.cloneIndividual(generation[j]);
         const stats = this.runSimulation(individual);
         let fitness = stats.treasuresFound - 0.001 * stats.moveCount <= 0 ? 0.05 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
-        console.log(stats);
+        console.log(fitness, stats);
+        fitnessArray.push(fitness); // Pole pre jednotlive fitness
         fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
-        fitnessArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
+        fitnessSumArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
         if (stats.success) { // Hrac nasiel vsetky poklady
           this.setState({ sucessIndividual: stats });
           break outerArray;
         }
       }
-      // let indexArray = [];
-      while (newGeneration.length < this.state.populationCount) { // Pokym nemam kompletnu novu populaciu
-        const index1 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray); // Ruleta, vyber nahodnych jedincov podla fitness
-        const index2 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessArray);
-        if ((index1 !== index2)) { // Vyberam roznych potomkov
-          let newIndividual1 = this.mergeIndividuals(generation[index1], generation[index2]); // Krizenie
-          let newIndividual2 = this.mergeIndividuals(generation[index1], generation[index2]);
-          this.mutateIndivual(newIndividual1);
-          this.mutateIndivual(newIndividual2);
-          newGeneration.push(newIndividual1, newIndividual2);
+
+      let desiredCount = this.getDesiredCount(); // Pocet jedincov, ktorych chceme dostat krizenim
+
+      while (newGeneration.length < desiredCount) { // Pokym nemam kompletnu novu populaciu
+        if (this.state.parentSelection === parentSelection.roulette) {
+          const index1 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessSumArray); // Ruleta, vyber nahodnych jedincov podla fitness
+          const index2 = this.findIndex(this.chooseFromInterval(fitnessSum), fitnessSumArray);
+          if ((index1 !== index2)) { // Vyberam roznych potomkov
+            let newIndividual1 = this.mergeIndividuals(generation[index1], generation[index2]); // Krizenie
+            let newIndividual2 = this.mergeIndividuals(generation[index1], generation[index2]);
+            this.mutateIndivual(newIndividual1);
+            this.mutateIndivual(newIndividual2);
+            newGeneration.push(newIndividual1, newIndividual2);
+          }
         }
+      }
+      if (this.state.elitism) {
+        this.pushBestInvidivuals(fitnessArray, generation, newGeneration, desiredCount);
       }
       generation = newGeneration;
     }
@@ -381,6 +416,8 @@ export default class App extends React.Component {
                 elitism={this.state.elitism}
                 parentSelection={this.state.parentSelection}
                 changeParentSelection={this.changeParentSelection}
+                elitismRatio={this.state.elitismRatio}
+                changeElitismRatio={this.changeElitismRatio}
               />
             </Grid>
             <Grid className="mt-5" item xs={6}>
