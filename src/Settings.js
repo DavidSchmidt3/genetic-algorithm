@@ -5,11 +5,18 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
+import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
-
+import Slider from '@mui/material/Slider';
+import { parentSelection } from './const';
 
 export default class Settings extends React.Component {
+
+  valueText = value => {
+    return `${value}%`;
+  }
+
   render() {
     return (
       <div className="settings">
@@ -97,9 +104,41 @@ export default class Settings extends React.Component {
             variant="filled"
           />
         </FormControl>
-        <div className="m-2">
+        <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
+          <InputLabel id="parentSelectionLabel">Spôsob výberu jedincov</InputLabel>
+          <Select
+            labelId="parentSelectionLabel"
+            id="parentSelection"
+            name="parentSelection"
+            value={this.props.parentSelection}
+            label="Spôsob výberu jedincov"
+            onChange={this.props.changeParentSelection}
+          >
+            <MenuItem value={parentSelection.roulette}>Ruleta</MenuItem>
+            <MenuItem value={parentSelection.tournament}>Turnaj</MenuItem>
+          </Select>
+        </FormControl>
+        <div className="m-2 sliders">
+          <Box sx={{ width: 420 }}>
+            <FormControl>
+              <FormControlLabel control={<Switch checked={this.props.elitism} name="elitism" onChange={this.props.handleSwitch} />} label="Elitárstvo" />
+            </FormControl>
+            <Slider
+              className="slider"
+              aria-label="Podiel elitárstva"
+              defaultValue={25}
+              disabled={!this.props.elitism}
+              getAriaValueText={this.valueText}
+              valueLabelDisplay="on"
+              valueLabelFormat={this.valueText}
+              step={5}
+              marks
+              min={0}
+              max={100}
+            />
+          </Box>
           <FormControl>
-            <FormControlLabel control={<Switch checked={this.props.continue} onChange={this.props.handleContinueChange} />} label="Pokračovať po poslednej bunke" />
+            <FormControlLabel control={<Switch checked={this.props.continue} name="continue" onChange={this.props.handleSwitch} />} label="Pokračovať po poslednej bunke" />
           </FormControl>
         </div>
         <div className="m-2">

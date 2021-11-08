@@ -32,3 +32,13 @@
   margin-left: 50%;
   transform: translateX(-50%);
 }
+
+.slider {
+  width: 275px !important;
+  margin-top: 5px;
+  margin-left: 5px;
+}
+
+.sliders {
+  margin-top: 35px !important;
+}

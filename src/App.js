@@ -3,6 +3,7 @@ import Gamegrid from './Grid';
 import React from 'react';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
+import { parentSelection } from './const';
 
 export default class App extends React.Component {
   constructor(props) {
@@ -16,7 +17,9 @@ export default class App extends React.Component {
       count: 1,
       populationCount: 20,
       generationCount: 20,
-      continue: true
+      continue: true,
+      elitism: true,
+      parentSelection: parentSelection.roulette
     };
   }
 
@@ -26,15 +29,15 @@ export default class App extends React.Component {
         this.setState({ x: 0, y: 0 }, () => {
           this.setState({ grid: this.createGrid() });
         });
-      if (e.target.name === 'count')
+      else if (e.target.name === 'count')
         this.generatePositions();
       else
         this.setState({ grid: this.createGrid() });
     });
   }
 
-  handleContinueChange = e => {
-    this.setState({ continue: e.target.checked });
+  handleSwitch = e => {
+    this.setState({ [e.target.name]: e.target.checked });
   }
 
   generateRandomPosition = () => {
@@ -111,6 +114,10 @@ export default class App extends React.Component {
 
   changeGeneration = e => {
     this.setState({ generationCount: e.target.value });
+  }
+
+  changeParentSelection = e => {
+    this.setState({ parentSelection: e.target.value });
   }
 
   setGenerations = () => {
@@ -367,10 +374,13 @@ export default class App extends React.Component {
                 setPopulation={this.setPopulation}
                 populationCount={this.state.populationCount}
                 continue={this.state.continue}
-                handleContinueChange={this.handleContinueChange}
+                handleSwitch={this.handleSwitch}
                 generationCount={this.state.generationCount}
                 changeGeneration={this.changeGeneration}
                 setGenerations={this.setGenerations}
+                elitism={this.state.elitism}
+                parentSelection={this.state.parentSelection}
+                changeParentSelection={this.changeParentSelection}
               />
             </Grid>
             <Grid className="mt-5" item xs={6}>
