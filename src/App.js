@@ -253,7 +253,7 @@ export default class App extends React.Component {
   // Najdenie najsilnejsieho jedinca z turnaja
   findStrongest = (indexes, fitnessArray, generation) => {
     let maxFitness = 0, itemIndex = 0;
-    indexes.foreach(index => {
+    indexes.forEach(index => {
       if (fitnessArray[index] > maxFitness) {
         maxFitness = fitnessArray[index];
         itemIndex = index;
@@ -296,7 +296,7 @@ export default class App extends React.Component {
         if (this.state.parentSelection === parentSelection.roulette)
           this.applyRoulette(fitnessSum, fitnessSumArray, generation, newGeneration);
         else
-          this.applyTournament(fitnessArray,);
+          this.applyTournament(fitnessArray, generation, newGeneration);
       }
 
       if (this.state.elitism)
