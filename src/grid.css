@@ -42,3 +42,18 @@
 .sliders {
   margin-top: 35px !important;
 }
+
+.tournamentSlider {
+  width: 180px !important;
+  margin-top: 27px;
+  margin-left: 20px;
+}
+
+.box {
+  display: inline-block;
+  margin-top: 5px;
+}
+
+.box p {
+  margin-left: 13px;
+}

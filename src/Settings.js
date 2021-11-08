@@ -5,6 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import Select from '@mui/material/Select';
+import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
@@ -15,6 +16,20 @@ export default class Settings extends React.Component {
 
   valueText = value => {
     return `${value}%`;
+  }
+
+  getSimulationDisabled = () => {
+    if (!this.props.grid.length)
+      return true;
+
+    for (let y = 0; y < this.props.gridSize; y++) {
+      for (let x = 0; x < this.props.gridSize; x++) {
+        if (this.props.grid?.[y]?.[x] === 1)
+          return false;
+      }
+    }
+
+    return true;
   }
 
   render() {
@@ -86,7 +101,8 @@ export default class Settings extends React.Component {
         <br />
         <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
           <TextField
-            onChange={this.props.changePopulation}
+            onChange={this.props.handleChange}
+            name="populationCount"
             id="populationCount"
             label="Počet jedincov v populácii"
             value={this.props.populationCount}
@@ -96,8 +112,9 @@ export default class Settings extends React.Component {
         </FormControl>
         <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
           <TextField
-            onChange={this.props.changeGeneration}
+            onChange={this.props.handleChange}
             id="generationCount"
+            name="generationCount"
             label="Počet generácii"
             value={this.props.generationCount}
             onBlur={this.props.setGenerations}
@@ -112,31 +129,51 @@ export default class Settings extends React.Component {
             name="parentSelection"
             value={this.props.parentSelection}
             label="Spôsob výberu jedincov"
-            onChange={this.props.changeParentSelection}
+            onChange={this.props.handleChange}
           >
             <MenuItem value={parentSelection.roulette}>Ruleta</MenuItem>
             <MenuItem value={parentSelection.tournament}>Turnaj</MenuItem>
           </Select>
         </FormControl>
+        {(this.props.parentSelection === parentSelection.tournament) &&
+          <Box className="box" sx={{ width: 200 }}>
+            <Typography>Počet jedincov do turnaja</Typography>
+            <Slider
+              aria-label="Počet jedincov do turnaja"
+              name="tournamentCount"
+              onChange={this.props.handleSlider}
+              value={this.props.tournamentCount}
+              valueLabelDisplay="on"
+              size="small"
+              step={1}
+              className="tournamentSlider"
+              marks
+              min={2}
+              max={5}
+            />
+          </Box>
+        }
         <div className="m-2 sliders">
           <Box sx={{ width: 420 }}>
             <FormControl>
               <FormControlLabel control={<Switch checked={this.props.elitism} name="elitism" onChange={this.props.handleSwitch} />} label="Elitárstvo" />
             </FormControl>
-            <Slider
-              className="slider"
-              aria-label="Podiel elitárstva"
-              onChange={this.props.changeElitismRatio}
-              value={this.props.elitismRatio}
-              disabled={!this.props.elitism}
-              getAriaValueText={this.valueText}
-              valueLabelDisplay="on"
-              valueLabelFormat={this.valueText}
-              step={5}
-              marks
-              min={10}
-              max={100}
-            />
+            {this.props.elitism &&
+              <Slider
+                className="slider"
+                aria-label="Podiel elitárstva"
+                name="elitismRatio"
+                onChange={this.props.handleSlider}
+                value={this.props.elitismRatio}
+                getAriaValueText={this.valueText}
+                valueLabelDisplay="on"
+                valueLabelFormat={this.valueText}
+                step={5}
+                marks
+                min={10}
+                max={100}
+              />
+            }
           </Box>
           <FormControl>
             <FormControlLabel control={<Switch checked={this.props.continue} name="continue" onChange={this.props.handleSwitch} />} label="Pokračovať po poslednej bunke" />
@@ -154,7 +191,7 @@ export default class Settings extends React.Component {
             />
           </Button>
           <br />
-          <Button onClick={this.props.startSimulation} className="ml-5 button-3" variant="outlined">Začať simuláciu</Button>
+          <Button onClick={this.props.startSimulation} disabled={this.getSimulationDisabled()} className="ml-5 button-3" variant="outlined">Začať simuláciu</Button>
         </div>
       </div>
     );
