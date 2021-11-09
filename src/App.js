@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { parentSelection } from './const';
 
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -22,6 +23,7 @@ export default class App extends React.Component {
       elitismRatio: 10,
       tournamentCount: 2,
       parentSelection: parentSelection.roulette,
+      mutationChance: 10
     };
   }
 
@@ -161,7 +163,7 @@ export default class App extends React.Component {
   }
 
   mergeIndividuals = (individual1, individual2) => {
-    let newIndividual = []; // Novy jedince
+    let newIndividual = []; // Novy jedinec
     const randomIndex = Math.floor(Math.random() * 64);
 
     for (let i = 0; i < randomIndex; i++) { // Prva cast bude z prveho jedinca
@@ -174,11 +176,31 @@ export default class App extends React.Component {
     return newIndividual;
   }
 
+  replaceString = (string, index, replacement) => {
+    return string.substr(0, index) + replacement + string.substr(index + replacement.length);
+  }
+
   mutateIndivual = individual => {
-    const number = Math.floor(Math.random() * 10); // Sanca mutacie 1 k 10
-    if (number === 0) {
-      const index = Math.floor(Math.random() * 64);
-      individual[index] = Math.floor(Math.random() * 256);
+    const number = Math.floor(Math.random() * 101); // Cislo od 0 po 100
+
+    if (this.state.mutationChance < number) { // Ak dojde k mutacii
+      const count = Math.floor(Math.random() * 3) + 1; // Zmenim 1 az 3 bunky
+      let positions = [];
+      while (positions.length < count) {
+        const position = Math.floor(Math.random() * 64);
+        if (!positions.includes(position)) // Chcem unikatne pozicie
+          positions.push(position);
+      }
+
+      positions.forEach(position => {
+        const bitPosition = Math.floor(Math.random() * 8); // Bity 0 az 7
+        let binaryIndividual = this.dec2bin(individual[position]); // Konverzia danej bunky na binarne cislo
+        let newBit = parseInt(binaryIndividual[bitPosition]) === 1 ? 0 : 1; // Obratim bit
+        // console.log(binaryIndividual, newBit, bitPosition);
+        binaryIndividual = this.replaceString(binaryIndividual, bitPosition, newBit) // Zmenim tento bit
+        individual[position] = this.bin2dec(binaryIndividual); // Prepisem povodnu bunku
+        // console.log(binaryIndividual);
+      });
     }
   }
 
@@ -311,6 +333,10 @@ export default class App extends React.Component {
     return (dec >>> 0).toString(2).padStart(8, '0');
   }
 
+  bin2dec = bin => {
+    return parseInt(bin, 2);
+  }
+
   getInstruction = dec => {
     return this.dec2bin(dec).substring(0, 2);
   }
@@ -441,6 +467,7 @@ export default class App extends React.Component {
     return { ...stats, success: false };
   }
 
+
   render() {
     return (
       <div className="mx-auto">
@@ -468,6 +495,7 @@ export default class App extends React.Component {
                 parentSelection={this.state.parentSelection}
                 elitismRatio={this.state.elitismRatio}
                 grid={this.state.grid}
+                mutationChance={this.state.mutationChance}
               />
             </Grid>
             <Grid className="mt-5" item xs={6}>

@@ -153,6 +153,24 @@ export default class Settings extends React.Component {
             />
           </Box>
         }
+        <div className="m-2">
+          <Box className="box2" sx={{ width: 420 }}>
+            <Typography className="chance">Šanca na mutáciu</Typography>
+            <Slider
+              aria-label="Šanca na mutáciu"
+              name="mutationChance"
+              onChange={this.props.handleSlider}
+              value={this.props.mutationChance}
+              valueLabelFormat={this.valueText}
+              valueLabelDisplay="on"
+              step={1}
+              className="mutationSlider"
+              marks
+              min={1}
+              max={10}
+            />
+          </Box>
+        </div>
         <div className="m-2 sliders">
           <Box sx={{ width: 420 }}>
             <FormControl>
