@@ -177,7 +177,7 @@ export default class App extends React.Component {
   }
 
   replaceString = (string, index, replacement) => {
-    return string.substr(0, index) + replacement + string.substr(index + replacement.length);
+    return string.substr(0, index) + replacement + string.substr(index + 1);
   }
 
   mutateIndivual = individual => {
@@ -196,10 +196,8 @@ export default class App extends React.Component {
         const bitPosition = Math.floor(Math.random() * 8); // Bity 0 az 7
         let binaryIndividual = this.dec2bin(individual[position]); // Konverzia danej bunky na binarne cislo
         let newBit = parseInt(binaryIndividual[bitPosition]) === 1 ? 0 : 1; // Obratim bit
-        // console.log(binaryIndividual, newBit, bitPosition);
         binaryIndividual = this.replaceString(binaryIndividual, bitPosition, newBit) // Zmenim tento bit
         individual[position] = this.bin2dec(binaryIndividual); // Prepisem povodnu bunku
-        // console.log(binaryIndividual);
       });
     }
   }
