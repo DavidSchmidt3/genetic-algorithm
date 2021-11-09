@@ -28,10 +28,10 @@
   padding: 10px 143px !important;
 }
 
-.settings {
+/* .settings {
   margin-left: 50%;
   transform: translateX(-50%);
-}
+} */
 
 .slider {
   width: 275px !important;
@@ -77,4 +77,9 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
+}
+
+.move {
+  display: inline-block;
+  margin-right: 5px;
 }

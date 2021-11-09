@@ -1,6 +1,7 @@
 import Settings from './Settings';
 import Gamegrid from './Grid';
 import React from 'react';
+import Results from './Results';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import { parentSelection } from './const';
@@ -23,9 +24,25 @@ export default class App extends React.Component {
       elitismRatio: 10,
       tournamentCount: 2,
       parentSelection: parentSelection.roulette,
-      mutationChance: 10
+      mutationChance: 10,
+      finished: false,
+      success: false,
+      successfulIndividual: {}
     };
   }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.gridSize !== this.state.gridSize ||
+      prevState.populationCount !== this.state.populationCount ||
+      prevState.generationCount !== this.state.generationCount ||
+      prevState.elitism !== this.state.elitism ||
+      prevState.elitismRatio !== this.state.elitismRatio ||
+      prevState.tournamentCount !== this.state.tournamentCount ||
+      prevState.mutationChance !== this.state.mutationChance) {
+      this.setState({ finished: false });
+    }
+  }
+
 
   handleChangeGrid = e => {
     this.setState({ [e.target.name]: e.target.value }, () => {
@@ -68,7 +85,7 @@ export default class App extends React.Component {
       }
     }
 
-    this.setState({ grid });
+    this.setState({ grid, finished: false });
   }
 
   // Vytvorenie 2d pola, so samymi nulami
@@ -228,23 +245,26 @@ export default class App extends React.Component {
     let newIndividual = this.cloneIndividual(individual);
     const stats = this.runSimulation(newIndividual);
     const fitness = stats.treasuresFound - 0.001 * stats.moveCount <= 0 ? 0.05 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
-    console.log(fitness, stats);
     fitnessArray.push(fitness); // Pole pre jednotlive fitness
     fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
+    console.log(fitness, stats);
 
     fitnessSumArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
+    let returnObject = {
+      fitnessSum,
+      fitness,
+      stats,
+      success: undefined
+    };
+
     if (stats.success) { // Hrac nasiel vsetky poklady
       this.setState({ sucessIndividual: stats });
-      return {
-        success: true,
-        fitnessSum
-      };
+      returnObject.success = true;
+      return returnObject;
     }
 
-    return {
-      success: false,
-      fitnessSum
-    };
+    returnObject.success = false;
+    return returnObject;
   }
 
   applyRoulette = (fitnessSum, fitnessSumArray, generation, newGeneration) => {
@@ -296,18 +316,25 @@ export default class App extends React.Component {
   }
 
   startSimulation = () => {
+    this.setState({ finished: false });
     let population = this.createFirstPopulation();
     let generation = population;
+    let bestIndividual = { results: { fitness: 0, success: false } };
 
     outerArray:
     for (let i = 0; i < this.state.generationCount; i++) {
       let newGeneration = [], fitnessArray = [], fitnessSumArray = [], fitnessSum = 0;
 
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
-        let results = this.runOneIndividual(generation[j], fitnessArray, fitnessSumArray, fitnessSum);
+        let results = this.runOneIndividual(generation[j], fitnessArray, fitnessSumArray, fitnessSum, bestIndividual);
         fitnessSum = results.fitnessSum;
-        if (results.success)
+
+        if (results.fitness > bestIndividual.results.fitness)
+          bestIndividual = { results };
+
+        if (results.success) {
           break outerArray;
+        }
       }
 
       let desiredCount = this.getDesiredCount(); // Pocet jedincov, ktorych chceme dostat krizenim
@@ -324,6 +351,10 @@ export default class App extends React.Component {
 
       generation = newGeneration;
     }
+
+    bestIndividual.results.success ? // Ak sa naslo riesenie
+      this.setState({ finished: true, success: true, successfulIndividual: bestIndividual }) :
+      this.setState({ finished: true, success: false, successfulIndividual: bestIndividual });
   }
 
   // Konverzia desiatkove cisla na 8 bitove binarne
@@ -417,6 +448,7 @@ export default class App extends React.Component {
     let grid = this.cloneGrid(this.state.grid); // Klonovanie gridu, aby sme nemodifikovali povodny
     let stats = { // Informacia o najdenych pokladoch a vykonanych krokoch
       treasuresFound: 0,
+      instructionCount: 0,
       moveCount: 0,
       success: null,
       moves: []
@@ -426,26 +458,28 @@ export default class App extends React.Component {
     while (firstTime || this.state.continue) { // Ak chcem pokracovat od zaciatku
       firstTime = false;
       for (let i = 0; i < individual.length; i++) { // Podla poctu buniek
-        if (stats.moveCount === 500) // Prebehlo 500 krokov
+        if (stats.instructionCount === 500) // Prebehlo 500 krokov
           return { ...stats, success: false };
         let instruction = parseInt(this.getInstruction(individual[i]), 2);
         let address = parseInt(this.getAdress(individual[i]), 2);
         switch (instruction) {
           case 0: // Inkrementácia
             individual[address] = individual[address] === 255 ? 0 : individual[address] + 1;
-            stats.moveCount++;
+            stats.instructionCount++;
             break;
           case 1: // Dekrementácia
             individual[address] = individual[address] === 0 ? 255 : individual[address] - 1;
-            stats.moveCount++;;
+            stats.instructionCount++;;
             break;
           case 2: // Skok
             i = address;
-            stats.moveCount++;
+            stats.instructionCount++;
             continue;
           case 3: // Výpis
             const moveNumber = parseInt(this.getLast2Bits(individual[address]), 2);
             stats.moves.push(moveNumber);
+            stats.moveCount++;
+            stats.instructionCount++;
             const validMove = this.applyMove(moveNumber, grid, stats);
             if (!validMove) // Hrac vysiel mimo mapy
               return { ...stats, success: false, error: true };
@@ -453,7 +487,7 @@ export default class App extends React.Component {
             if (stats.treasuresFound === this.state.count)  // Hrac nasiel vsetky poklady
               return { ...stats, success: true };
 
-            if (stats.moveCount === 500) // Prebehlo 500 krokov
+            if (stats.instructionCount === 500) // Prebehlo 500 krokov
               return { ...stats, success: false };
             break;
           default:
@@ -465,13 +499,12 @@ export default class App extends React.Component {
     return { ...stats, success: false };
   }
 
-
   render() {
     return (
       <div className="mx-auto">
         <Box className="m-5">
           <Grid className="mx-auto" container spacing={2}>
-            <Grid item xs={6} className="mx-auto">
+            <Grid item xs={4} className="mx-auto">
               <Settings
                 handleChangeGrid={this.handleChangeGrid}
                 generatePositions={this.generatePositions}
@@ -496,8 +529,15 @@ export default class App extends React.Component {
                 mutationChance={this.state.mutationChance}
               />
             </Grid>
-            <Grid className="mt-5" item xs={6}>
+            <Grid className="mt-5" item xs={4}>
               <Gamegrid grid={this.state.grid} />
+            </Grid>
+            <Grid item xs={4}>
+              <Results
+                finished={this.state.finished}
+                success={this.state.success}
+                successfulIndividual={this.state.successfulIndividual}
+              />
             </Grid>
           </Grid>
         </Box>
