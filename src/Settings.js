@@ -40,6 +40,7 @@ export default class Settings extends React.Component {
           <InputLabel id="gridLabel">Veľkosť mriežky</InputLabel>
           <Select
             labelId="gridLabel"
+            disabled={!this.props.settingsEnabled}
             id="gridSize"
             name="gridSize"
             value={this.props.gridSize}
@@ -56,6 +57,7 @@ export default class Settings extends React.Component {
           <InputLabel id="countLabel">Počet pokladov</InputLabel>
           <Select
             labelId="countLabel"
+            disabled={!this.props.settingsEnabled}
             id="count"
             name="count"
             value={this.props.count}
@@ -73,6 +75,7 @@ export default class Settings extends React.Component {
           <Select
             labelId="xLabel"
             id="x"
+            disabled={!this.props.settingsEnabled}
             name="x"
             value={this.props.x}
             label="Začiatočná pozícia x"
@@ -88,6 +91,7 @@ export default class Settings extends React.Component {
           <Select
             labelId="yLabel"
             id="y"
+            disabled={!this.props.settingsEnabled}
             name="y"
             value={this.props.y}
             label="Začiatočná pozícia y"
@@ -103,6 +107,7 @@ export default class Settings extends React.Component {
           <TextField
             onChange={this.props.handleChange}
             name="populationCount"
+            disabled={!this.props.settingsEnabled}
             id="populationCount"
             label="Počet jedincov v populácii"
             value={this.props.populationCount}
@@ -114,6 +119,7 @@ export default class Settings extends React.Component {
           <TextField
             onChange={this.props.handleChange}
             id="generationCount"
+            disabled={!this.props.settingsEnabled}
             name="generationCount"
             label="Počet generácii"
             value={this.props.generationCount}
@@ -126,6 +132,7 @@ export default class Settings extends React.Component {
           <Select
             labelId="parentSelectionLabel"
             id="parentSelection"
+            disabled={!this.props.settingsEnabled}
             name="parentSelection"
             value={this.props.parentSelection}
             label="Spôsob výberu jedincov"
@@ -135,13 +142,15 @@ export default class Settings extends React.Component {
             <MenuItem value={parentSelection.tournament}>Turnaj</MenuItem>
           </Select>
         </FormControl>
-        {(this.props.parentSelection === parentSelection.tournament) &&
+        {
+          (this.props.parentSelection === parentSelection.tournament) &&
           <Box className="box" sx={{ width: 200 }}>
             <Typography>Počet jedincov do turnaja</Typography>
             <Slider
               aria-label="Počet jedincov do turnaja"
               name="tournamentCount"
               onChange={this.props.handleSlider}
+              disabled={!this.props.settingsEnabled}
               value={this.props.tournamentCount}
               valueLabelDisplay="on"
               size="small"
@@ -160,6 +169,7 @@ export default class Settings extends React.Component {
               aria-label="Šanca na mutáciu"
               name="mutationChance"
               onChange={this.props.handleSlider}
+              disabled={!this.props.settingsEnabled}
               value={this.props.mutationChance}
               valueLabelFormat={this.valueText}
               valueLabelDisplay="on"
@@ -174,13 +184,14 @@ export default class Settings extends React.Component {
         <div className="m-2 sliders">
           <Box sx={{ width: 420 }}>
             <FormControl>
-              <FormControlLabel control={<Switch checked={this.props.elitism} name="elitism" onChange={this.props.handleSwitch} />} label="Elitárstvo" />
+              <FormControlLabel control={<Switch disabled={!this.props.settingsEnabled} checked={this.props.elitism} name="elitism" onChange={this.props.handleSwitch} />} label="Elitárstvo" />
             </FormControl>
             {this.props.elitism &&
               <Slider
                 className="slider"
                 aria-label="Podiel elitárstva"
                 name="elitismRatio"
+                disabled={!this.props.settingsEnabled}
                 onChange={this.props.handleSlider}
                 value={this.props.elitismRatio}
                 getAriaValueText={this.valueText}
@@ -194,13 +205,13 @@ export default class Settings extends React.Component {
             }
           </Box>
           <FormControl>
-            <FormControlLabel control={<Switch checked={this.props.continue} name="continue" onChange={this.props.handleSwitch} />} label="Pokračovať po poslednej bunke" />
+            <FormControlLabel control={<Switch disabled={!this.props.settingsEnabled} checked={this.props.continue} name="continue" onChange={this.props.handleSwitch} />} label="Pokračovať po poslednej bunke" />
           </FormControl>
         </div>
         <div className="m-2">
-          <Button onClick={this.props.generatePositions} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
+          <Button onClick={this.props.generatePositions} disabled={!this.props.settingsEnabled} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
           <br />
-          <Button className="button-2" variant="outlined" component="label">
+          <Button disabled={!this.props.settingsEnabled} className="button-2" variant="outlined" component="label">
             Nahraj súbor so súradnicami
             <input
               onChange={(e) => this.props.showFile(e)}
@@ -209,9 +220,17 @@ export default class Settings extends React.Component {
             />
           </Button>
           <br />
-          <Button onClick={this.props.startSimulation} disabled={this.getSimulationDisabled()} className="ml-5 button-3" variant="outlined">Začať simuláciu</Button>
+          <Button onClick={this.props.startSimulation} disabled={this.getSimulationDisabled()} className="ml-5 button-3" variant="outlined">Začať novú simuláciu</Button>
+          {(this.props.finished) &&
+            <>
+              {!this.props.success &&
+                <Button onClick={this.props.continueSimulation} className="ml-5 button-3" variant="outlined">Pokračuj simuláciu</Button>
+              }
+              <Button onClick={this.props.endSimulation} className="ml-5 button-3" variant="outlined">Skonči simuláciu</Button>
+            </>
+          }
         </div>
-      </div>
+      </div >
     );
   }
 }

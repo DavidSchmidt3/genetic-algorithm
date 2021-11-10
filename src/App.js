@@ -27,6 +27,7 @@ export default class App extends React.Component {
       mutationChance: 10,
       finished: false,
       success: false,
+      settingsEnabled: true,
       successfulIndividual: {}
     };
   }
@@ -315,9 +316,17 @@ export default class App extends React.Component {
     newGeneration.push(newIndividual1, newIndividual2);
   }
 
-  startSimulation = () => {
-    this.setState({ finished: false });
-    let population = this.createFirstPopulation();
+  continueSimulation = () => {
+    this.startSimulation(undefined, this.state.generation);
+  }
+
+  endSimulation = () => {
+    this.setState({ settingsEnabled: true });
+  }
+
+  startSimulation = (e, firstPopulation) => {
+    this.setState({ finished: false, settingsEnabled: false });
+    let population = (firstPopulation || this.createFirstPopulation()); // Buď vytvorim novu populaciu, alebo zoberiem prechadzajucu
     let generation = population;
     let bestIndividual = { results: { fitness: 0, success: false } };
 
@@ -353,8 +362,8 @@ export default class App extends React.Component {
     }
 
     bestIndividual.results.success ? // Ak sa naslo riesenie
-      this.setState({ finished: true, success: true, successfulIndividual: bestIndividual }) :
-      this.setState({ finished: true, success: false, successfulIndividual: bestIndividual });
+      this.setState({ finished: true, success: true, successfulIndividual: bestIndividual, generation }) :
+      this.setState({ finished: true, success: false, successfulIndividual: bestIndividual, generation });
   }
 
   // Konverzia desiatkove cisla na 8 bitove binarne
@@ -526,6 +535,11 @@ export default class App extends React.Component {
                 elitismRatio={this.state.elitismRatio}
                 grid={this.state.grid}
                 mutationChance={this.state.mutationChance}
+                finished={this.state.finished}
+                continueSimulation={this.continueSimulation}
+                endSimulation={this.endSimulation}
+                success={this.state.success}
+                settingsEnabled={this.state.settingsEnabled}
               />
             </Grid>
             <Grid className="mt-5" item xs={4}>
