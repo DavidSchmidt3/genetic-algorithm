@@ -3,6 +3,8 @@ import Gamegrid from './Grid';
 import React from 'react';
 import Results from './Results';
 import Box from '@mui/material/Box';
+import Backdrop from '@mui/material/Backdrop';
+import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
 import { parentSelection } from './const';
 
@@ -28,6 +30,7 @@ export default class App extends React.Component {
       finished: false,
       success: false,
       settingsEnabled: true,
+      loading: false,
       successfulIndividual: {}
     };
   }
@@ -39,7 +42,9 @@ export default class App extends React.Component {
       prevState.elitism !== this.state.elitism ||
       prevState.elitismRatio !== this.state.elitismRatio ||
       prevState.tournamentCount !== this.state.tournamentCount ||
-      prevState.mutationChance !== this.state.mutationChance) {
+      prevState.mutationChance !== this.state.mutationChance ||
+      prevState.x !== this.state.x ||
+      prevState.y !== this.state.y) {
       this.setState({ finished: false });
     }
   }
@@ -248,7 +253,6 @@ export default class App extends React.Component {
     const fitness = stats.treasuresFound - 0.001 * stats.moveCount <= 0 ? 0.05 : stats.treasuresFound - 0.001 * stats.moveCount; // Výpočet fitness funkcie, priorita je počet nájdených pokladov a sekundárne počet krokov
     fitnessArray.push(fitness); // Pole pre jednotlive fitness
     fitnessSum += fitness; // Pripočitame fitness jedinca ku celkovej fitness
-    console.log(fitness, stats);
 
     fitnessSumArray.push(fitnessSum); // Do pola zapiseme novu aktualnu celkovu hodnotu, tuto pouzijeme na ruletu
     let returnObject = {
@@ -324,8 +328,7 @@ export default class App extends React.Component {
     this.setState({ settingsEnabled: true });
   }
 
-  startSimulation = (e, firstPopulation) => {
-    this.setState({ finished: false, settingsEnabled: false });
+  startComputations = (e, firstPopulation) => {
     let population = (firstPopulation || this.createFirstPopulation()); // Buď vytvorim novu populaciu, alebo zoberiem prechadzajucu
     let generation = population;
     let bestIndividual = { results: { fitness: 0, success: false } };
@@ -362,8 +365,13 @@ export default class App extends React.Component {
     }
 
     bestIndividual.results.success ? // Ak sa naslo riesenie
-      this.setState({ finished: true, success: true, successfulIndividual: bestIndividual, generation }) :
-      this.setState({ finished: true, success: false, successfulIndividual: bestIndividual, generation });
+      this.setState({ finished: true, success: true, loading: false, successfulIndividual: bestIndividual, generation }) :
+      this.setState({ finished: true, success: false, loading: false, successfulIndividual: bestIndividual, generation });
+  }
+
+  startSimulation = (e, firstPopulation) => {
+    this.setState({ finished: false, settingsEnabled: false, loading: true });
+    setTimeout(() => this.startComputations(e, firstPopulation), 50);
   }
 
   // Konverzia desiatkove cisla na 8 bitove binarne
@@ -458,6 +466,7 @@ export default class App extends React.Component {
     let stats = { // Informacia o najdenych pokladoch a vykonanych krokoch
       treasuresFound: 0,
       instructionCount: 0,
+      grid,
       moveCount: 0,
       success: null,
       moves: []
@@ -543,7 +552,10 @@ export default class App extends React.Component {
               />
             </Grid>
             <Grid className="mt-5" item xs={4}>
-              <Gamegrid grid={this.state.grid} />
+              <Gamegrid
+                grid={this.state.grid}
+                finished={this.state.finished}
+                successfulIndividual={this.state.successfulIndividual} />
             </Grid>
             <Grid item xs={4}>
               <Results
@@ -553,6 +565,12 @@ export default class App extends React.Component {
               />
             </Grid>
           </Grid>
+          <Backdrop
+            sx={{ color: '#fff', zIndex: (theme) => 200 }}
+            open={this.state.loading}
+          >
+            <CircularProgress color="inherit" />
+          </Backdrop>
         </Box>
       </div>
     );
