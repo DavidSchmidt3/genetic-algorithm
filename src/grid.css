@@ -15,23 +15,19 @@
 }
 
 .button {
-  padding: 10px 90px !important;
+  width: 420px !important;
+  margin: 5px 0 !important;
 }
 
 .button-2 {
-  margin-top: 10px !important;
-  padding: 10px 85px !important;
+  width: 420px !important;
+  margin: 5px 0 !important;
 }
 
 .button-3 {
-  margin-top: 10px !important;
-  padding: 10px 143px !important;
+  width: 420px !important;
+  margin: 5px 0 !important;
 }
-
-/* .settings {
-  margin-left: 50%;
-  transform: translateX(-50%);
-} */
 
 .slider {
   width: 275px !important;

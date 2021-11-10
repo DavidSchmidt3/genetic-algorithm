@@ -478,7 +478,6 @@ export default class App extends React.Component {
           case 3: // Výpis
             const moveNumber = parseInt(this.getLast2Bits(individual[address]), 2);
             stats.moves.push(moveNumber);
-            stats.moveCount++;
             stats.instructionCount++;
             const validMove = this.applyMove(moveNumber, grid, stats);
             if (!validMove) // Hrac vysiel mimo mapy
