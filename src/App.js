@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import Grid from '@mui/material/Grid';
+import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { parentSelection } from './const';
 
 
@@ -31,6 +32,7 @@ export default class App extends React.Component {
       success: false,
       settingsEnabled: true,
       loading: false,
+      statistics: [],
       successfulIndividual: {}
     };
   }
@@ -332,6 +334,7 @@ export default class App extends React.Component {
     let population = (firstPopulation || this.createFirstPopulation()); // Buď vytvorim novu populaciu, alebo zoberiem prechadzajucu
     let generation = population;
     let bestIndividual = { results: { fitness: 0, success: false } };
+    let statistics = []; // Statistiky pre graf
 
     outerArray:
     for (let i = 0; i < this.state.generationCount; i++) {
@@ -350,6 +353,7 @@ export default class App extends React.Component {
       }
 
       let desiredCount = this.getDesiredCount(); // Pocet jedincov, ktorych chceme dostat krizenim
+      statistics.push({ name: i, averageFitness: (fitnessSum / this.state.populationCount).toFixed(2) }); // Do statistik vlozime objekt, ktory hovori o priemerej fitness hodnote
 
       while (newGeneration.length < desiredCount) { // Pokym nemam kompletnu novu populaciu
         if (this.state.parentSelection === parentSelection.roulette)
@@ -365,13 +369,13 @@ export default class App extends React.Component {
     }
 
     bestIndividual.results.success ? // Ak sa naslo riesenie
-      this.setState({ finished: true, success: true, loading: false, successfulIndividual: bestIndividual, generation }) :
-      this.setState({ finished: true, success: false, loading: false, successfulIndividual: bestIndividual, generation });
+      this.setState({ finished: true, success: true, loading: false, statistics, successfulIndividual: bestIndividual, generation }) :
+      this.setState({ finished: true, success: false, loading: false, statistics, successfulIndividual: bestIndividual, generation });
   }
 
   startSimulation = (e, firstPopulation) => {
     this.setState({ finished: false, settingsEnabled: false, loading: true });
-    setTimeout(() => this.startComputations(e, firstPopulation), 50);
+    setTimeout(() => this.startComputations(e, firstPopulation), 50); // SetTimeout pre stihnutie vyobrazenia nacitavania
   }
 
   // Konverzia desiatkove cisla na 8 bitove binarne
@@ -562,9 +566,23 @@ export default class App extends React.Component {
                 finished={this.state.finished}
                 success={this.state.success}
                 successfulIndividual={this.state.successfulIndividual}
+                statistics={this.state.statistics}
               />
             </Grid>
           </Grid>
+          {this.state.finished &&
+            <ResponsiveContainer height={300} width="100%">
+              <LineChart data={this.state.statistics}
+                margin={{ top: 30, right: 30, left: 30, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="5 5" stroke="#808080" />
+                <XAxis allowDecimals={false} tickCount={25} dataKey="name" type="number" />
+                <YAxis tickCount={6} type="number" />
+                <Tooltip />
+                <Legend />
+                <Line type="monotoneX" dot={false} name="Priemerná fitness hodnota generácie" dataKey="averageFitness" stroke="#8884d8" />
+              </LineChart>
+            </ResponsiveContainer>
+          }
           <Backdrop
             sx={{ color: '#fff', zIndex: (theme) => 200 }}
             open={this.state.loading}
@@ -572,7 +590,7 @@ export default class App extends React.Component {
             <CircularProgress color="inherit" />
           </Backdrop>
         </Box>
-      </div>
+      </div >
     );
   }
 }

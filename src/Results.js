@@ -26,7 +26,7 @@ export default class Results extends React.Component {
               <h2>Boli úspešné nájdené všetky poklady</h2> :
               <h2>Neboli úspešné nájdené všetky poklady</h2>}
             <h4>Počet krokov: {this.props.successfulIndividual?.results?.stats?.moveCount}</h4>
-            <h4>Postupnosť krokov:</h4>
+            <h4>Postupnosť krokov</h4>
             <div>
               {this.props.successfulIndividual?.results?.stats?.moves?.map((move, idx) => {
                 return <p key={idx} className="move">{`${this.getMoveString(move)}, `}</p>
