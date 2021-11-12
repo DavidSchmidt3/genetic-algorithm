@@ -51,7 +51,6 @@ export default class App extends React.Component {
     }
   }
 
-
   handleChangeGrid = e => {
     this.setState({ [e.target.name]: e.target.value }, () => {
       if (e.target.name === 'gridSize')
@@ -337,12 +336,17 @@ export default class App extends React.Component {
     let statistics = []; // Statistiky pre graf
 
     outerArray:
-    for (let i = 0; i < this.state.generationCount; i++) {
-      let newGeneration = [], fitnessArray = [], fitnessSumArray = [], fitnessSum = 0;
+    for (let i = 0; i < this.state.generationCount; i++) { // Podla poctu pozadovanych generacii
+      let newGeneration = [], fitnessArray = [], fitnessSumArray = [], fitnessSum = 0, minFitness = Number.MAX_SAFE_INTEGER, maxFitness = 0;
 
       for (let j = 0; j < this.state.populationCount; j++) { // Pre kazdeho jedinca zbehnem simulaciu
         let results = this.runOneIndividual(generation[j], fitnessArray, fitnessSumArray, fitnessSum, bestIndividual);
         fitnessSum = results.fitnessSum;
+        if (results.fitness > maxFitness)
+          maxFitness = results.fitness;
+
+        if (results.fitness < minFitness)
+          minFitness = results.fitness;
 
         if (results.fitness > bestIndividual.results.fitness)
           bestIndividual = { results };
@@ -353,7 +357,7 @@ export default class App extends React.Component {
       }
 
       let desiredCount = this.getDesiredCount(); // Pocet jedincov, ktorych chceme dostat krizenim
-      statistics.push({ name: i, averageFitness: (fitnessSum / this.state.populationCount).toFixed(2) }); // Do statistik vlozime objekt, ktory hovori o priemerej fitness hodnote
+      statistics.push({ name: i, averageFitness: (fitnessSum / this.state.populationCount).toFixed(2), minFitness, maxFitness }); // Do statistik vlozime objekt, ktory hovori o fitness hodnotach
 
       while (newGeneration.length < desiredCount) { // Pokym nemam kompletnu novu populaciu
         if (this.state.parentSelection === parentSelection.roulette)
@@ -580,6 +584,8 @@ export default class App extends React.Component {
                 <Tooltip />
                 <Legend />
                 <Line type="monotoneX" dot={false} name="Priemerná fitness hodnota generácie" dataKey="averageFitness" stroke="#8884d8" />
+                <Line type="monotoneX" dot={false} name="Minimálna fitness hodnota generácie" dataKey="minFitness" stroke="#ff0000" />
+                <Line type="monotoneX" dot={false} name="Maximálna fitness hodnota generácie" dataKey="maxFitness" stroke="#0040ff" />
               </LineChart>
             </ResponsiveContainer>
           }
