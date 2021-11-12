@@ -12,10 +12,10 @@ export default class Grid extends React.Component {
               <div key={`${idx}${idy}`} className="cell"></div> :
               number === 1 ?
                 <div key={`${idx}${idy}`} className="cell">
-                  <img src="/images/treasure.png" alt="Poklad" />
+                  <img src={process.env.PUBLIC_URL + '/images/treasure.png'} alt="Poklad" />
                 </div> :
                 <div key={`${idx}${idy}`} className="cell player">
-                  <img src="/images/miner.png" alt="Poklad" />
+                  <img src={process.env.PUBLIC_URL + '/images/miner.png'} alt="Hľadač" />
                 </div>
           }).concat(<div key={idx} className="separator" />);
         })}
@@ -27,15 +27,14 @@ export default class Grid extends React.Component {
                 <div key={`${idx}${idy}`} className="cell"></div> :
                 number === 1 ?
                   <div key={`${idx}${idy}`} className="cell">
-                    <img src="/images/treasure.png" alt="Poklad" />
+                    <img src={process.env.PUBLIC_URL + '/images/treasure.png'} alt="Poklad" />
                   </div> :
                   <div key={`${idx}${idy}`} className="cell player">
-                    <img src="/images/miner.png" alt="Poklad" />
+                    <img src={process.env.PUBLIC_URL + '/images/miner.png'} alt="Hľadač" />
                   </div>
             }).concat(<div key={idx} className="separator" />);
           })}
         </div>
-
       </>
     )
   }
