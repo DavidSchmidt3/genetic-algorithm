@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/genetic-algorithm/static/css/main.21fded00.chunk.css",
+    "main.js": "/genetic-algorithm/static/js/main.e31c8c49.chunk.js",
+    "main.js.map": "/genetic-algorithm/static/js/main.e31c8c49.chunk.js.map",
+    "runtime-main.js": "/genetic-algorithm/static/js/runtime-main.ef2745ea.js",
+    "runtime-main.js.map": "/genetic-algorithm/static/js/runtime-main.ef2745ea.js.map",
+    "static/js/2.38659029.chunk.js": "/genetic-algorithm/static/js/2.38659029.chunk.js",
+    "static/js/2.38659029.chunk.js.map": "/genetic-algorithm/static/js/2.38659029.chunk.js.map",
+    "index.html": "/genetic-algorithm/index.html",
+    "static/css/main.21fded00.chunk.css.map": "/genetic-algorithm/static/css/main.21fded00.chunk.css.map",
+    "static/js/2.38659029.chunk.js.LICENSE.txt": "/genetic-algorithm/static/js/2.38659029.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.ef2745ea.js",
+    "static/js/2.38659029.chunk.js",
+    "static/css/main.21fded00.chunk.css",
+    "static/js/main.e31c8c49.chunk.js"
+  ]
+}
