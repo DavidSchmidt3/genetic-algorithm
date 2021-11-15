@@ -208,21 +208,12 @@ export default class App extends React.Component {
     const number = Math.floor(Math.random() * 101); // Cislo od 0 po 100
 
     if (this.state.mutationChance < number) { // Ak dojde k mutacii
-      const count = Math.floor(Math.random() * 3) + 1; // Zmenim 1 az 3 bunky
-      let positions = [];
-      while (positions.length < count) {
-        const position = Math.floor(Math.random() * 64);
-        if (!positions.includes(position)) // Chcem unikatne pozicie
-          positions.push(position);
-      }
-
-      positions.forEach(position => {
-        const bitPosition = Math.floor(Math.random() * 8); // Bity 0 az 7
-        let binaryIndividual = this.dec2bin(individual[position]); // Konverzia danej bunky na binarne cislo
-        let newBit = parseInt(binaryIndividual[bitPosition]) === 1 ? 0 : 1; // Obratim bit
-        binaryIndividual = this.replaceString(binaryIndividual, bitPosition, newBit) // Zmenim tento bit
-        individual[position] = this.bin2dec(binaryIndividual); // Prepisem povodnu bunku
-      });
+      const position = Math.floor(Math.random() * 64);
+      const bitPosition = Math.floor(Math.random() * 8); // Bity 0 az 7
+      let binaryIndividual = this.dec2bin(individual[position]); // Konverzia danej bunky na binarne cislo
+      let newBit = parseInt(binaryIndividual[bitPosition]) === 1 ? 0 : 1; // Obratim bit
+      binaryIndividual = this.replaceString(binaryIndividual, bitPosition, newBit) // Zmenim tento bit
+      individual[position] = this.bin2dec(binaryIndividual); // Prepisem povodnu bunku
     }
   }
 
