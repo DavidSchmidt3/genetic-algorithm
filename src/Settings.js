@@ -127,6 +127,7 @@ export default class Settings extends React.Component {
             variant="filled"
           />
         </FormControl>
+        <br />
         <FormControl variant="filled" sx={{ m: 1, minWidth: 200 }}>
           <InputLabel id="parentSelectionLabel">Spôsob výberu jedincov</InputLabel>
           <Select
