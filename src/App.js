@@ -17,10 +17,12 @@ export default class App extends React.Component {
     this.state = {
       gridSize: 5,
       grid: [],
+      actualGrid: [],
       x: 0,
       y: 0,
       count: 1,
       populationCount: 20,
+      animationDelay: 10,
       generationCount: 20,
       continue: true,
       elitism: true,
@@ -317,7 +319,7 @@ export default class App extends React.Component {
   }
 
   endSimulation = () => {
-    this.setState({ settingsEnabled: true });
+    this.setState({ settingsEnabled: true, finished: false });
   }
 
   startComputations = (e, firstPopulation) => {
@@ -366,11 +368,12 @@ export default class App extends React.Component {
     bestIndividual.results.success ? // Ak sa naslo riesenie
       this.setState({ finished: true, success: true, loading: false, statistics, successfulIndividual: bestIndividual, generation }) :
       this.setState({ finished: true, success: false, loading: false, statistics, successfulIndividual: bestIndividual, generation });
+
   }
 
   startSimulation = (e, firstPopulation) => {
     this.setState({ finished: false, settingsEnabled: false, loading: true });
-    setTimeout(() => this.startComputations(e, firstPopulation), 50); // SetTimeout pre stihnutie vyobrazenia nacitavania
+    setTimeout(() => this.startComputations(e, firstPopulation), 100); // SetTimeout pre stihnutie vyobrazenia nacitavania
   }
 
   // Konverzia desiatkove cisla na 8 bitove binarne
@@ -515,6 +518,31 @@ export default class App extends React.Component {
     return { ...stats, success: false };
   }
 
+  timer = ms => new Promise(res => setTimeout(res, ms));
+
+  drawStart = () => {
+    this.setState({ actualGrid: this.state.grid });
+  }
+
+  startAnimation = async () => {
+    let actualGrid = this.cloneGrid(this.state.grid);
+    const moves = this.state.successfulIndividual.results.stats.moves;
+    let stats = { moveCount: 0 };
+    this.setState({ animationRunning: true });
+
+    for (let i = 0; i < moves.length; i++) {
+      this.applyMove(moves[i], actualGrid, stats);
+      this.setState({ actualGrid });
+      await this.timer(this.state.animationDelay);
+    }
+
+    this.setState({ animationRunning: false });
+  }
+
+  displayEnd = () => {
+    this.setState({ actualGrid: this.state.successfulIndividual.results.stats.grid });
+  }
+
   render() {
     return (
       <div className="mx-auto">
@@ -548,13 +576,21 @@ export default class App extends React.Component {
                 endSimulation={this.endSimulation}
                 success={this.state.success}
                 settingsEnabled={this.state.settingsEnabled}
+                startAnimation={this.startAnimation}
+                animationRunning={this.state.animationRunning}
+                displayEnd={this.displayEnd}
+                actualGrid={this.state.actualGrid}
+                successfulIndividual={this.state.successfulIndividual}
               />
             </Grid>
             <Grid className="mt-5" item xs={4}>
               <Gamegrid
                 grid={this.state.grid}
                 finished={this.state.finished}
-                successfulIndividual={this.state.successfulIndividual} />
+                successfulIndividual={this.state.successfulIndividual}
+                drawStart={this.drawStart}
+                actualGrid={this.state.actualGrid}
+              />
             </Grid>
             <Grid item xs={4}>
               <Results

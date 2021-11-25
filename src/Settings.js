@@ -18,13 +18,31 @@ export default class Settings extends React.Component {
     return `${value}%`;
   }
 
+  valueMs = value => {
+    return `${value} ms`;
+  }
+
   getSimulationDisabled = () => {
-    if (!this.props.grid.length)
+    if (!this.props.grid.length || this.props.animationRunning)
       return true;
 
     for (let y = 0; y < this.props.gridSize; y++) {
       for (let x = 0; x < this.props.gridSize; x++) {
         if (this.props.grid?.[y]?.[x] === 1)
+          return false;
+      }
+    }
+
+    return true;
+  }
+
+  getEndDrawDisabled = () => {
+    if (this.props.animationRunning)
+      return true;
+
+    for (let y = 0; y < this.props.gridSize; y++) {
+      for (let x = 0; x < this.props.gridSize; x++) {
+        if (this.props.successfulIndividual?.results?.stats?.grid?.[y]?.[x] !== this.props.actualGrid?.[y]?.[x])
           return false;
       }
     }
@@ -208,6 +226,25 @@ export default class Settings extends React.Component {
           <FormControl>
             <FormControlLabel control={<Switch disabled={!this.props.settingsEnabled} checked={this.props.continue} name="continue" onChange={this.props.handleSwitch} />} label="Pokračovať po poslednej bunke" />
           </FormControl>
+          <br />
+          <FormControl>
+            <Typography className="chance">Pauza medzi snímkami animácie</Typography>
+            <Slider
+              className="slider mt-5"
+              aria-label="Pauza medzi snímkami animácie"
+              name="animationDelay"
+              disabled={!this.props.settingsEnabled}
+              onChange={this.props.handleSlider}
+              value={this.props.animationDelay}
+              getAriaValueText={this.valueMs}
+              valueLabelDisplay="on"
+              valueLabelFormat={this.valueMs}
+              step={10}
+              marks
+              min={10}
+              max={200}
+            />
+          </FormControl>
         </div>
         <div className="m-2">
           <Button onClick={this.props.generatePositions} disabled={!this.props.settingsEnabled} className="ml-5 button" variant="outlined">Vygenuruj pozície pokladov</Button>
@@ -225,9 +262,11 @@ export default class Settings extends React.Component {
           {(this.props.finished) &&
             <>
               {!this.props.success &&
-                <Button onClick={this.props.continueSimulation} className="ml-5 button-3" variant="outlined">Pokračuj simuláciu</Button>
+                <Button onClick={this.props.continueSimulation} disabled={this.props.animationRunning} className="ml-5 button-3" variant="outlined">Pokračuj simuláciu</Button>
               }
-              <Button onClick={this.props.endSimulation} className="ml-5 button-3" variant="outlined">Skonči simuláciu</Button>
+              <Button onClick={this.props.endSimulation} disabled={this.props.animationRunning} className="ml-5 button-3" variant="outlined">Skonči simuláciu</Button>
+              <Button onClick={this.props.startAnimation} disabled={this.props.animationRunning} className="ml-5 button-3" variant="outlined">Vykresli animáciu</Button>
+              <Button onClick={this.props.displayEnd} disabled={this.getEndDrawDisabled()} className="ml-5 button-3" variant="outlined">Vykresli koniec</Button>
             </>
           }
         </div>

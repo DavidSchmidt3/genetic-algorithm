@@ -18,7 +18,6 @@ export default class Results extends React.Component {
   }
 
   render() {
-    console.log(this.props.successfulIndividual);
     return (
       <>
         {this.props.finished &&

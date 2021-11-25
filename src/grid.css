@@ -5,9 +5,23 @@
   display: inline-block;
 }
 
+.final-grid {
+  position: relative;
+}
+
 .cell img {
   width: 49px;
   vertical-align: unset;
+}
+
+.player.img {
+  width: 49px;
+  height: 49px;
+}
+
+.treasure.img {
+  width: 49px;
+  height: 49px;
 }
 
 .separator {
