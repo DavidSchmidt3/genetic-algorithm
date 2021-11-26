@@ -233,7 +233,7 @@ export default class Settings extends React.Component {
               className="slider mt-5"
               aria-label="Pauza medzi snímkami animácie"
               name="animationDelay"
-              disabled={!this.props.settingsEnabled}
+              disabled={this.props.animationRunning}
               onChange={this.props.handleSlider}
               value={this.props.animationDelay}
               getAriaValueText={this.valueMs}
